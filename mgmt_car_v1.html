@@ -1,0 +1,297 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+  <title>차량 운행관리 · 국세청 제출용</title>
+  <style>
+    :root{
+      --bg:#0f172a;--panel:#111827;--text:#e5e7eb;--muted:#94a3b8;--accent:#06b6d4;--ok:#10b981;--warn:#f59e0b;--danger:#ef4444;--chip:#1f2937
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{margin:0;background:linear-gradient(180deg,#0f172a,#0b1020);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial}
+    a{color:#22d3ee;text-decoration:none}
+    .container{max-width:1100px;margin:0 auto;padding:16px}
+    header{position:sticky;top:0;z-index:20;background:rgba(11,16,32,.8);backdrop-filter:blur(6px);border-bottom:1px solid #1e293b}
+    .nav{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+    .brand{display:flex;align-items:center;gap:10px;font-weight:800}
+    .brand .dot{width:10px;height:10px;border-radius:50%;background:linear-gradient(45deg,#06b6d4,#22d3ee);box-shadow:0 0 16px rgba(34,211,238,.6)}
+    .tabs{display:flex;gap:8px;margin-left:auto;flex-wrap:wrap}
+    .tab{border:1px solid #1f2937;background:linear-gradient(180deg,#0b1222,#0a1220);padding:10px 14px;border-radius:12px;color:var(--text);cursor:pointer;font-weight:700}
+    .tab[aria-selected="true"]{border-color:var(--accent);box-shadow:0 0 0 2px rgba(34,211,238,.15) inset;color:#ecfeff}
+    .content{padding:18px}
+
+    .grid{display:grid;gap:12px}
+    .grid.auto{grid-template-columns:repeat(auto-fit,minmax(140px,1fr))}
+    .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:12px 14px;border-radius:12px;border:1px solid #1f2937;background:linear-gradient(180deg,#0c1325,#0a1220);color:#eaf2ff;font-weight:700;cursor:pointer}
+    .btn.primary{background:linear-gradient(180deg,#0891b2,#0e7490);border-color:#0ea5b7}
+    .btn.good{background:linear-gradient(180deg,#059669,#047857);border-color:#10b981}
+    .btn.warn{background:linear-gradient(180deg,#b45309,#92400e);border-color:#f59e0b}
+    .btn.ghost{background:transparent}
+
+    .card{background:linear-gradient(180deg,#0a1020,#0b1222);border:1px solid #1f2937;border-radius:16px;padding:14px}
+    .card h3{margin:0 0 8px 0}
+
+    .field{display:flex;flex-direction:column;gap:6px}
+    .field label{font-size:14px;color:var(--muted)}
+    input,select,textarea{width:100%;background:#0b1222;border:1px solid #1f2937;color:var(--text);border-radius:12px;padding:10px}
+
+    .chip{display:inline-flex;align-items:center;gap:8px;padding:8px 10px;border-radius:999px;background:var(--chip);border:1px solid #243044}
+    .list{display:grid;gap:8px}
+    .table{width:100%;border-collapse:separate;border-spacing:0 8px}
+    .table th{font-size:13px;color:var(--muted);text-align:left;padding:6px}
+    .table td{background:linear-gradient(180deg,#0b1222,#0a1220);border:1px solid #1f2937;border-left:none;border-right:none;padding:10px}
+
+    .choice-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px}
+    .choice{padding:14px;border-radius:14px;border:1px solid #1f2937;background:#0b1222;cursor:pointer;display:flex;flex-direction:column;gap:6px}
+    .choice[aria-selected="true"]{outline:2px solid var(--accent);box-shadow:0 0 0 3px rgba(34,211,238,.15)}
+
+    .steps{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}
+    .step-dot{width:26px;height:26px;border-radius:999px;border:1px solid #1f2937;background:#0b1222;color:#9fb0c6;display:inline-flex;align-items:center;justify-content:center;font-weight:700}
+    .step-dot.active{background:linear-gradient(180deg,#06b6d4,#0891b2);color:#001018;border-color:#22d3ee;box-shadow:0 0 0 2px rgba(34,211,238,.25)}
+
+    .wizard-step{display:none}
+    .wizard-step.active{display:block}
+
+    .toast{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);padding:12px 16px;border-radius:12px;background:#05222a;border:1px solid #0ea5b7;color:#e0fbff;display:none;z-index:50}
+    .muted{color:var(--muted)}
+    .right{margin-left:auto}
+    .sr-only{position:absolute;left:-9999px}
+    .hr{height:1px;background:linear-gradient(90deg,transparent,#1f2937,transparent);margin:10px 0}
+
+    /* 인쇄용 스타일 */
+    @media print{ body{background:#fff;color:#000} header,.tabs,[role="tabpanel"]:not(#page-report){display:none !important} #page-report{display:block !important} .report-sheet{background:#fff} .report-table th,.report-table td{color:#000;border-color:#000} }
+  </style>
+</head>
+<body>
+<header>
+  <div class="container nav" role="navigation" aria-label="주요 내비게이션">
+    <div class="brand"><span class="dot" aria-hidden="true"></span><span>차량 운행관리</span><small class="muted" style="font-weight:500">— 국세청 제출용</small></div>
+    <div class="tabs" role="tablist">
+      <button class="tab" role="tab" data-tab="dashboard" aria-selected="true">현황</button>
+      <button class="tab" role="tab" data-tab="new">운행기록 입력</button>
+      <button class="tab" role="tab" data-tab="stats">월별 통계</button>
+      <button class="tab" role="tab" data-tab="report">제출자료</button>
+      <button class="tab" role="tab" data-tab="admin">관리자 설정</button>
+      <button class="tab" role="tab" data-tab="backup">내보내기/가져오기</button>
+    </div>
+  </div>
+</header>
+
+<main class="container content">
+  <!-- DASHBOARD -->
+  <section id="page-dashboard" role="tabpanel">
+    <div class="card">
+      <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(160px,1fr))">
+        <div class="field"><label>기간 (시작)</label><input type="date" id="filterFrom"></div>
+        <div class="field"><label>기간 (종료)</label><input type="date" id="filterTo"></div>
+        <div class="field"><label>차량</label><select id="filterVehicle"><option value="">전체</option></select></div>
+        <div class="field"><label>팀</label><select id="filterTeam"><option value="">전체</option></select></div>
+        <div class="field"><label>사용자</label><select id="filterUser"><option value="">전체</option></select></div>
+      </div>
+      <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn" id="btnFilter">조회</button>
+        <button class="btn ghost" id="btnClearFilter">초기화</button>
+        <button class="btn primary right" id="btnGoNew">+ 새 운행기록</button>
+      </div>
+    </div>
+
+    <div class="hr"></div>
+
+    <div class="card">
+      <table class="table" aria-label="운행기록 테이블">
+        <thead>
+          <tr>
+            <th>일자</th><th>시간</th><th>차량</th><th>팀/사용자</th><th>계기(시작→종료)</th><th>거리(km)</th><th>목적</th><th>출발지</th><th>도착지</th><th>비고</th>
+          </tr>
+        </thead>
+        <tbody id="listBody"></tbody>
+      </table>
+      <div style="display:flex;align-items:center;margin-top:8px;gap:8px">
+        <div id="listCount" class="muted">0건</div>
+        <div class="right" style="display:flex;gap:6px">
+          <button class="btn" id="btnExportCsv">CSV 내보내기</button>
+          <label class="btn ghost" for="importCsv">CSV 가져오기</label>
+          <input id="importCsv" type="file" accept=".csv" class="sr-only" />
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- NEW / WIZARD -->
+  <section id="page-new" role="tabpanel" hidden>
+    <div class="card">
+      <h3>운행기록 입력</h3>
+      <div class="steps"><div class="step-dot" data-stepdot="1">1</div><div class="step-dot" data-stepdot="2">2</div><div class="step-dot" data-stepdot="3">3</div><div class="step-dot" data-stepdot="4">4</div><div class="step-dot" data-stepdot="5">5</div><div class="step-dot" data-stepdot="6">완</div></div>
+
+      <div class="wizard-step active" data-step="1"><div class="field"><label>차량 선택</label><div id="vehicleChoices" class="choice-grid"></div></div></div>
+      <div class="wizard-step" data-step="2"><div class="field"><label>팀 선택</label><div id="teamChoices" class="choice-grid"></div></div></div>
+      <div class="wizard-step" data-step="3"><div class="field"><label>사용자 선택 (팀 기준)</label><div id="userChoices" class="choice-grid"></div></div></div>
+      <div class="wizard-step" data-step="4">
+        <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(180px,1fr))">
+          <div class="field"><label>일자</label><input id="fDate" type="date"></div>
+          <div class="field"><label>시작 시간</label><input id="fStartTime" type="time"></div>
+          <div class="field"><label>종료 시간</label><input id="fEndTime" type="time"></div>
+          <div class="field"><label>계기 (시작)</label><input id="fOdoStart" type="number" inputmode="decimal" placeholder="예: 12,345"></div>
+          <div class="field"><label>계기 (종료)</label><input id="fOdoEnd" type="number" inputmode="decimal" placeholder="예: 12,380"></div>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap"><div class="chip">예상 거리: <strong id="distanceKm">0</strong> km</div><div class="chip">직전 종료 계기: <strong id="lastOdo">-</strong></div></div>
+      </div>
+      <div class="wizard-step" data-step="5">
+        <div class="field"><label>이용 목적</label><div id="purposeChoices" class="choice-grid"></div></div>
+        <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr))">
+          <div class="field"><label>출발지</label><input id="fOrigin" placeholder="예: 춘천 본사"></div>
+          <div class="field"><label>도착지</label><input id="fDestination" placeholder="예: 서울 고객사"></div>
+        </div>
+        <div class="field"><label>비고</label><textarea id="fNote" rows="3" placeholder="특이사항을 입력하세요"></textarea></div>
+      </div>
+      <div class="wizard-step" data-step="6"><div class="card"><div><strong>확인</strong></div><div id="confirmSummary" class="list"></div></div></div>
+
+      <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
+        <button class="btn" id="btnPrev">← 이전</button>
+        <button class="btn primary" id="btnNext">다음 →</button>
+        <button class="btn good" id="btnSave" style="display:none">저장</button>
+        <button class="btn ghost right" id="btnCancel">취소</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- STATS -->
+  <section id="page-stats" role="tabpanel" hidden>
+    <div class="card">
+      <h3>월별 통계</h3>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <div class="field" style="min-width:160px"><label>월 선택</label><input id="statsMonth" type="month" /></div>
+        <button class="btn" id="btnStats">보기</button>
+      </div>
+    </div>
+    <div class="hr"></div>
+    <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(240px,1fr))">
+      <div class="card"><h3>총 주행거리</h3><div id="statsTotalKm" style="font-size:28px;font-weight:800">0 km</div><div class="muted" id="statsTripCount">0건</div></div>
+      <div class="card"><h3>차량별 주행거리</h3><div id="statsByVehicle" class="list"></div></div>
+      <div class="card"><h3>사용자별 주행거리</h3><div id="statsByUser" class="list"></div></div>
+      <div class="card"><h3>목적별 건수</h3><div id="statsByPurpose" class="list"></div></div>
+    </div>
+  </section>
+
+  <!-- REPORT -->
+  <section id="page-report" role="tabpanel" hidden>
+    <div class="card">
+      <h3>국세청 제출용 운행기록부</h3>
+      <div class="row" style="gap:8px;flex-wrap:wrap">
+        <div class="field" style="min-width:160px"><label>월 선택</label><input id="reportMonth" type="month" /></div>
+        <div class="field" style="min-width:180px"><label>차량</label><select id="reportVehicle"><option value="">전체</option></select></div>
+        <div class="field" style="min-width:160px"><label>사용자</label><select id="reportUser"><option value="">전체</option></select></div>
+        <button class="btn" id="btnReportPreview">미리보기</button>
+        <button class="btn primary" id="btnReportPrint">PDF/인쇄</button>
+        <button class="btn" id="btnReportCsv">CSV 다운로드</button>
+      </div>
+    </div>
+    <div class="hr"></div>
+    <div id="reportBox" class="report-sheet card" style="padding:20px"></div>
+  </section>
+
+  <!-- ADMIN -->
+  <section id="page-admin" role="tabpanel" hidden>
+    <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(280px,1fr))">
+      <div class="card"><h3>차량</h3><div class="list" id="adminVehicles"></div><div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px"><input id="newVehicleName" placeholder="차량명 (예: 카니발)" /><input id="newVehicleNo" placeholder="번호판 (예: 12가3456)" style="max-width:160px"/><button class="btn" id="btnAddVehicle">추가</button></div></div>
+      <div class="card"><h3>팀</h3><div class="list" id="adminTeams"></div><div class="row"><input id="newTeam" placeholder="팀명 (예: CS팀)" /><button class="btn" id="btnAddTeam">추가</button></div></div>
+      <div class="card"><h3>사용자</h3><div class="list" id="adminUsers"></div><div class="row"><input id="newUser" placeholder="이름" /><select id="newUserTeam" style="max-width:160px"></select><button class="btn" id="btnAddUser">추가</button></div></div>
+      <div class="card"><h3>이용 목적</h3><div class="list" id="adminPurposes"></div><div class="row"><input id="newPurpose" placeholder="예: 고객방문, 정비, 주유" /><button class="btn" id="btnAddPurpose">추가</button></div></div>
+    </div>
+    <div class="card" style="margin-top:12px"><h3>회사/표기정보</h3><div class="row"><input id="companyName" placeholder="회사명 (보고서 헤더에 표시)" /><button class="btn" id="btnSaveCompany">저장</button></div><div class="muted">현재 회사명: <span id="companyNameNow"></span></div></div>
+    <div class="hr"></div>
+    <div class="row"><button class="btn warn" id="btnSeed">데모 데이터 채우기</button><button class="btn" id="btnReset">전체 초기화</button></div>
+  </section>
+
+  <!-- BACKUP -->
+  <section id="page-backup" role="tabpanel" hidden>
+    <div class="card"><h3>백업 / 복원</h3><div class="row"><button class="btn" id="btnExportJson">JSON 내보내기</button><label class="btn ghost" for="importJson">JSON 가져오기</label><input id="importJson" type="file" accept=".json" class="sr-only" /></div><p class="muted">이 앱은 브라우저의 <strong>localStorage</strong>에 데이터를 저장합니다. 정기적으로 JSON으로 내보내어 백업하세요.</p></div>
+  </section>
+</main>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+const storeKey='vtms_data_tax_v1';
+let db=loadDB();
+let state={step:1,vehicleId:null,teamId:null,userId:null,date:null,startTime:null,endTime:null,odoStart:null,odoEnd:null,purpose:null,origin:"",destination:"",note:""};
+function $(q,root=document){return root.querySelector(q)}
+function $all(q,root=document){return Array.from(root.querySelectorAll(q))}
+function uuid(){return 'xxxxxxxx'.replace(/[x]/g,()=> (Math.random()*16|0).toString(16))}
+function saveDB(){localStorage.setItem(storeKey,JSON.stringify(db))}
+function loadDB(){const raw=localStorage.getItem(storeKey);if(!raw){const fresh={settings:{company:""},vehicles:[],teams:[],users:[],purposes:[],trips:[]};localStorage.setItem(storeKey,JSON.stringify(fresh));return fresh;}try{return JSON.parse(raw)}catch(e){return {settings:{},vehicles:[],teams:[],users:[],purposes:[],trips:[]}}}
+function formatDate(d){const dt=new Date(d);if(Number.isNaN(+dt))return d;const y=dt.getFullYear(),m=('0'+(dt.getMonth()+1)).slice(-2),day=('0'+dt.getDate()).slice(-2);return `${y}-${m}-${day}`}
+function sum(a){return a.reduce((x,y)=>x+y,0)}
+function showToast(msg){const t=$('#toast');t.textContent=msg;t.style.display='block';setTimeout(()=>t.style.display='none',1600)}
+function numberWithCommas(n){if(n===null||n===undefined||n==='')return'';const x=Number(n);if(Number.isNaN(x))return String(n);return x.toLocaleString('ko-KR')}
+
+// Tabs
+$all('.tab').forEach(btn=>{btn.addEventListener('click',()=>{const tab=btn.dataset.tab;$all('[role="tabpanel"]').forEach(sec=>sec.hidden=true);$(`#page-${tab}`).hidden=false;$all('.tab').forEach(b=>b.setAttribute('aria-selected','false'));btn.setAttribute('aria-selected','true');if(tab==='dashboard'){renderFilters();renderList();}if(tab==='new'){startWizard();}if(tab==='stats'){initStats();}if(tab==='report'){initReport();}if(tab==='admin'){renderAdmin();}})});
+renderFilters();renderList();
+
+// Filters & List
+function renderFilters(){const fv=$('#filterVehicle'),ft=$('#filterTeam'),fu=$('#filterUser');fv.innerHTML='<option value="">전체</option>'+db.vehicles.map(v=>`<option value="${v.id}">${v.name} (${v.no})</option>`).join('');ft.innerHTML='<option value="">전체</option>'+db.teams.map(t=>`<option value="${t.id}">${t.name}</option>`).join('');fu.innerHTML='<option value="">전체</option>'+db.users.map(u=>`<option value="${u.id}">${u.name}</option>`).join('');const now=new Date();const start=new Date(now.getFullYear(),now.getMonth(),1);$('#filterFrom').value=formatDate(start);$('#filterTo').value=formatDate(now)}
+$('#btnFilter').addEventListener('click',renderList);$('#btnClearFilter').addEventListener('click',()=>{renderFilters();renderList()});$('#btnGoNew').addEventListener('click',()=>{$(`[data-tab="new"]`).click()})
+function renderList(){const tbody=$('#listBody');tbody.innerHTML='';const fFrom=$('#filterFrom').value,fTo=$('#filterTo').value;const fVeh=$('#filterVehicle').value,fTeam=$('#filterTeam').value,fUser=$('#filterUser').value;let rows=[...db.trips];if(fFrom)rows=rows.filter(r=>r.date>=fFrom);if(fTo)rows=rows.filter(r=>r.date<=fTo);if(fVeh)rows=rows.filter(r=>r.vehicleId===fVeh);if(fTeam)rows=rows.filter(r=>r.teamId===fTeam);if(fUser)rows=rows.filter(r=>r.userId===fUser);rows.sort((a,b)=>(a.date===b.date?(a.startTime||'').localeCompare(b.startTime||''):a.date.localeCompare(b.date)));for(const r of rows){const veh=db.vehicles.find(v=>v.id===r.vehicleId);const team=db.teams.find(t=>t.id===r.teamId);const user=db.users.find(u=>u.id===r.userId);const tr=document.createElement('tr');const isWarn=(Number(r.odoEnd)-Number(r.odoStart))<0;tr.innerHTML=`<td>${r.date}</td><td>${(r.startTime||'')}~${(r.endTime||'')}</td><td><strong>${veh?veh.name:'-'}</strong><div class="muted">${veh?veh.no:''}</div></td><td>${team?team.name:'-'}<div class="muted">${user?user.name:''}</div></td><td>${numberWithCommas(r.odoStart)} → ${numberWithCommas(r.odoEnd)}</td><td style="${isWarn?'color:var(--danger)':''}">${numberWithCommas(r.distance||0)}</td><td>${r.purpose||''}</td><td>${r.origin||''}</td><td>${r.destination||''}</td><td>${r.note||''}</td>`;tbody.appendChild(tr)}$('#listCount').textContent=`${rows.length}건`}
+
+// CSV Export/Import
+$('#btnExportCsv').addEventListener('click',()=>{const header=['date','startTime','endTime','vehicle','vehicleNo','team','user','origin','destination','odoStart','odoEnd','distance','purpose','note'];const lines=[header.join(',')];for(const r of db.trips){const veh=db.vehicles.find(v=>v.id===r.vehicleId)||{};const team=db.teams.find(t=>t.id===r.teamId)||{};const user=db.users.find(u=>u.id===r.userId)||{};const row=[r.date,r.startTime||'',r.endTime||'',veh.name||'',veh.no||'',team.name||'',user.name||'',`"${(r.origin||'').replaceAll('"','""')}"`,`"${(r.destination||'').replaceAll('"','""')}"`,r.odoStart||'',r.odoEnd||'',r.distance||'',`"${(r.purpose||'').replaceAll('"','""')}"`,`"${(r.note||'').replaceAll('"','""')}"`];lines.push(row.join(','))}const blob=new Blob(["\ufeff"+lines.join('\n')],{type:'text/csv;charset=utf-8;'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`운행기록_${formatDate(new Date())}.csv`;a.click()});
+$('#importCsv').addEventListener('change',async(ev)=>{const file=ev.target.files[0];if(!file)return;const text=await file.text();const rows=text.split(/\r?\n/).filter(Boolean);if(rows.length<2)return showToast('CSV 내용이 없습니다');const header=rows[0].split(',').map(s=>s.trim());const idx=(k)=>header.findIndex(h=>h.toLowerCase()===k);for(let i=1;i<rows.length;i++){const cols=splitCsvLine(rows[i]);const date=cols[idx('date')]||formatDate(new Date());const startTime=cols[idx('starttime')]||'';const endTime=cols[idx('endtime')]||'';const vName=cols[idx('vehicle')]||'';const vNo=cols[idx('vehicleno')]||'';const tName=cols[idx('team')]||'';const uName=cols[idx('user')]||'';const origin=(cols[idx('origin')]||'').replace(/^\"|\"$/g,'');const destination=(cols[idx('destination')]||'').replace(/^\"|\"$/g,'');const odoStart=Number(cols[idx('odostart')]||0);const odoEnd=Number(cols[idx('odoend')]||0);const distance=Number(cols[idx('distance')]||(odoEnd-odoStart));const purpose=(cols[idx('purpose')]||'').replace(/^\"|\"$/g,'');const note=(cols[idx('note')]||'').replace(/^\"|\"$/g,'');const vehId=ensureVehicle(vName,vNo);const teamId=ensureTeam(tName);const userId=ensureUser(uName,teamId);db.trips.push({id:uuid(),date,startTime,endTime,vehicleId:vehId,teamId,userId,origin,destination,odoStart,odoEnd,distance,purpose,note,createdAt:Date.now()})}saveDB();renderList();showToast('CSV 가져오기 완료');ev.target.value=''});
+function splitCsvLine(line){const out=[];let cur='';let inQ=false;for(let i=0;i<line.length;i++){const ch=line[i];if(ch==='"'){if(inQ&&line[i+1]==='"'){cur+='"';i++;}else inQ=!inQ;}else if(ch===','&&!inQ){out.push(cur);cur='';}else{cur+=ch}}out.push(cur);return out}
+function ensureVehicle(name,no){if(!name&&!no)return null;let v=db.vehicles.find(x=>x.name===name&&x.no===no);if(!v){v={id:uuid(),name:name||no||'차량',no:no||''};db.vehicles.push(v)}return v.id}
+function ensureTeam(name){if(!name)return null;let t=db.teams.find(x=>x.name===name);if(!t){t={id:uuid(),name};db.teams.push(t)}return t.id}
+function ensureUser(name,teamId){if(!name)return null;let u=db.users.find(x=>x.name===name);if(!u){u={id:uuid(),name,teamId:teamId||null};db.users.push(u)}return u.id}
+
+// Wizard
+function startWizard(){state={step:1,vehicleId:null,teamId:null,userId:null,date:formatDate(new Date()),startTime:'09:00',endTime:'10:00',odoStart:null,odoEnd:null,purpose:null,origin:"",destination:"",note:""};$all('[data-step]').forEach(p=>p.classList.remove('active'));$('[data-step="1"]').classList.add('active');updateStepDots();renderVehicleChoices();renderTeamChoices();renderPurposeChoices();$('#fDate').value=state.date;$('#fStartTime').value=state.startTime;$('#fEndTime').value=state.endTime;$('#fOdoStart').value='';$('#fOdoEnd').value='';$('#fNote').value='';if($('#fOrigin'))$('#fOrigin').value='';if($('#fDestination'))$('#fDestination').value='';updateOdoHint();$('#btnSave').style.display='none';$('#btnNext').style.display='inline-flex'}
+function updateStepDots(){$all('[data-stepdot]').forEach(dot=>{dot.classList.toggle('active',Number(dot.dataset.stepdot)===state.step)})}
+function gotoStep(n){state.step=n;$all('[data-step]').forEach(p=>p.classList.toggle('active',Number(p.dataset.step)===n));updateStepDots();if(n===6){buildConfirm();$('#btnSave').style.display='inline-flex';$('#btnNext').style.display='none'}else{$('#btnSave').style.display='none';$('#btnNext').style.display='inline-flex'}}
+function renderVehicleChoices(){const wrap=$('#vehicleChoices');wrap.innerHTML='';if(db.vehicles.length===0){wrap.innerHTML='<div class="muted">관리자에서 차량을 먼저 추가하세요.</div>';return;}for(const v of db.vehicles){const el=document.createElement('button');el.type='button';el.className='choice';el.innerHTML=`<strong>${v.name}</strong><small>${v.no}</small>`;el.setAttribute('aria-selected',state.vehicleId===v.id?'true':'false');el.addEventListener('click',()=>{state.vehicleId=v.id;renderVehicleChoices();updateOdoHint();});wrap.appendChild(el)}}
+function renderTeamChoices(){const wrap=$('#teamChoices');wrap.innerHTML='';if(db.teams.length===0){wrap.innerHTML='<div class="muted">관리자에서 팀을 추가하세요.</div>';return;}for(const t of db.teams){const el=document.createElement('button');el.type='button';el.className='choice';el.innerHTML=`<strong>${t.name}</strong>`;el.setAttribute('aria-selected',state.teamId===t.id?'true':'false');el.addEventListener('click',()=>{state.teamId=t.id;renderUserChoices();renderTeamChoices();});wrap.appendChild(el)}}
+function renderUserChoices(){const wrap=$('#userChoices');wrap.innerHTML='';const list=db.users.filter(u=>!state.teamId||u.teamId===state.teamId);if(list.length===0){wrap.innerHTML='<div class="muted">선택된 팀에 사용자가 없습니다. 관리자에서 추가하세요.</div>';return;}for(const u of list){const el=document.createElement('button');el.type='button';el.className='choice';el.innerHTML=`<strong>${u.name}</strong><small>${(db.teams.find(t=>t.id===u.teamId)||{}).name||''}</small>`;el.setAttribute('aria-selected',state.userId===u.id?'true':'false');el.addEventListener('click',()=>{state.userId=u.id;renderUserChoices();});wrap.appendChild(el)}}
+function renderPurposeChoices(){const wrap=$('#purposeChoices');wrap.innerHTML='';if(db.purposes.length===0){wrap.innerHTML='<div class="muted">관리자에서 목적을 추가하세요.</div>';return;}for(const p of db.purposes){const el=document.createElement('button');el.type='button';el.className='choice';el.innerHTML=`<strong>${p}</strong>`;el.setAttribute('aria-selected',state.purpose===p?'true':'false');el.addEventListener('click',()=>{state.purpose=p;renderPurposeChoices();});wrap.appendChild(el)}}
+function updateOdoHint(){const last=[...db.trips].filter(t=>t.vehicleId===state.vehicleId).sort((a,b)=>(a.date===b.date?(b.endTime||'').localeCompare(a.endTime||''):b.date.localeCompare(a.date)))[0];$('#lastOdo').textContent=last?numberWithCommas(last.odoEnd):'-'}
+$('#fOdoStart').addEventListener('input',updateDistancePreview);$('#fOdoEnd').addEventListener('input',updateDistancePreview);function updateDistancePreview(){const s=Number($('#fOdoStart').value||0),e=Number($('#fOdoEnd').value||0);const d=e-s;$('#distanceKm').textContent=d>=0?numberWithCommas(d):'오류'}
+$('#btnPrev').addEventListener('click',()=>{if(state.step>1)gotoStep(state.step-1)});$('#btnNext').addEventListener('click',()=>{if(state.step===1&&!state.vehicleId)return showToast('차량을 선택하세요');if(state.step===2&&!state.teamId)return showToast('팀을 선택하세요');if(state.step===3&&!state.userId)return showToast('사용자를 선택하세요');if(state.step===4){const d=$('#fDate').value,st=$('#fStartTime').value,et=$('#fEndTime').value;const os=Number($('#fOdoStart').value||0),oe=Number($('#fOdoEnd').value||0);if(!d)return showToast('일자를 입력하세요');if(!st||!et)return showToast('시간을 입력하세요');if(oe<os)return showToast('종료 계기는 시작보다 커야 합니다');Object.assign(state,{date:d,startTime:st,endTime:et,odoStart:os,odoEnd:oe});}if(state.step===5&&!state.purpose){return showToast('이용 목적을 선택하세요');}gotoStep(state.step+1)});
+$('#btnCancel').addEventListener('click',()=>{$(`[data-tab="dashboard"]`).click()})
+$('#btnSave').addEventListener('click',()=>{const origin=$('#fOrigin')?$('#fOrigin').value.trim():'';const destination=$('#fDestination')?$('#fDestination').value.trim():'';const note=$('#fNote').value||'';const distance=Number(state.odoEnd)-Number(state.odoStart);db.trips.push({id:uuid(),date:state.date,startTime:state.startTime,endTime:state.endTime,vehicleId:state.vehicleId,teamId:state.teamId,userId:state.userId,origin,destination,odoStart:state.odoStart,odoEnd:state.odoEnd,distance,purpose:state.purpose,note,createdAt:Date.now()});saveDB();showToast('저장 완료');const keep={vehicleId:state.vehicleId,teamId:state.teamId,userId:state.userId,purpose:state.purpose};startWizard();Object.assign(state,keep);renderVehicleChoices();renderTeamChoices();renderUserChoices();renderPurposeChoices();updateOdoHint();updateDistancePreview()})
+function buildConfirm(){const veh=db.vehicles.find(v=>v.id===state.vehicleId);const team=db.teams.find(t=>t.id===state.teamId);const user=db.users.find(u=>u.id===state.userId);const meta=$('#confirmSummary');meta.innerHTML='';const chips=[`일자 <strong>${state.date}</strong>`,`시간 <strong>${state.startTime}~${state.endTime}</strong>`,`차량 <strong>${veh?veh.name:''} ${veh?'('+veh.no+')':''}</strong>`,`팀/사용자 <strong>${team?team.name:''} / ${user?user.name:''}</strong>`,`출발지 <strong>${state.origin||''}</strong>`,`도착지 <strong>${state.destination||''}</strong>`,`계기 <strong>${numberWithCommas(state.odoStart)} → ${numberWithCommas(state.odoEnd)}</strong>`,`거리 <strong>${numberWithCommas(state.odoEnd-state.odoStart)} km</strong>`,`목적 <strong>${state.purpose||''}</strong>`];meta.innerHTML=chips.map(c=>`<span class="chip">${c}</span>`).join(' ')}
+
+// Stats
+function initStats(){const m=$('#statsMonth');const now=new Date();m.value=`${now.getFullYear()}-${('0'+(now.getMonth()+1)).slice(-2)}`;renderStats()}$('#btnStats').addEventListener('click',renderStats)
+function renderStats(){const ym=$('#statsMonth').value;if(!ym)return;const [y,m]=ym.split('-').map(Number);const start=new Date(y,m-1,1);const end=new Date(y,m,0);const s=formatDate(start),e=formatDate(end);const rows=db.trips.filter(r=>r.date>=s&&r.date<=e);const totalKm=sum(rows.map(r=>Number(r.distance||0)));$('#statsTotalKm').textContent=`${numberWithCommas(totalKm)} km`;$('#statsTripCount').textContent=`${rows.length}건`;const byVeh=groupSum(rows,r=>r.vehicleId,r=>Number(r.distance||0));const byUser=groupSum(rows,r=>r.userId,r=>Number(r.distance||0));const byPurp=groupCount(rows,r=>r.purpose||'기타');$('#statsByVehicle').innerHTML=Object.entries(byVeh).map(([id,km])=>{const v=db.vehicles.find(x=>x.id===id);return `<div class="chip"><strong>${v?v.name:'-'}</strong><span class="muted">${numberWithCommas(km)} km</span></div>`}).join(' ');$('#statsByUser').innerHTML=Object.entries(byUser).map(([id,km])=>{const u=db.users.find(x=>x.id===id);return `<div class="chip"><strong>${u?u.name:'-'}</strong><span class="muted">${numberWithCommas(km)} km</span></div>`}).join(' ');$('#statsByPurpose').innerHTML=Object.entries(byPurp).map(([p,c])=>`<div class="chip"><strong>${p}</strong><span class="muted">${c}건</span></div>`).join(' ')}
+function groupSum(rows,keyFn,valFn){const m={};for(const r of rows){const k=keyFn(r)||'-';m[k]=(m[k]||0)+valFn(r)}return m}
+function groupCount(rows,keyFn){const m={};for(const r of rows){const k=keyFn(r)||'-';m[k]=(m[k]||0)+1}return m}
+
+// Report (NTS format)
+function initReport(){const m=$('#reportMonth');const now=new Date();if(m&&!m.value)m.value=`${now.getFullYear()}-${('0'+(now.getMonth()+1)).slice(-2)}`;const vSel=$('#reportVehicle');const uSel=$('#reportUser');if(vSel){vSel.innerHTML='<option value="">전체</option>'+db.vehicles.map(v=>`<option value="${v.id}">${v.name} (${v.no})</option>`).join('')}if(uSel){uSel.innerHTML='<option value="">전체</option>'+db.users.map(u=>`<option value="${u.id}">${u.name}</option>`).join('')}renderReport()}
+$('#btnReportPreview')&&$('#btnReportPreview').addEventListener('click',renderReport);$('#btnReportPrint')&&$('#btnReportPrint').addEventListener('click',()=>{window.print()});$('#btnReportCsv')&&$('#btnReportCsv').addEventListener('click',downloadReportCsv)
+function renderReport(){const ym=$('#reportMonth').value;if(!ym)return;const [y,m]=ym.split('-').map(Number);const start=new Date(y,m-1,1),end=new Date(y,m,0);const s=formatDate(start),e=formatDate(end);const vid=$('#reportVehicle').value;const uid=$('#reportUser').value;let rows=db.trips.filter(r=>r.date>=s&&r.date<=e&&(!vid||r.vehicleId===vid)&&(!uid||r.userId===uid));rows.sort((a,b)=>(a.date===b.date?(a.startTime||'').localeCompare(b.startTime||''):a.date.localeCompare(b.date)));const veh=vid?db.vehicles.find(v=>v.id===vid):null;const usr=uid?db.users.find(u=>u.id===uid):null;const company=(db.settings&&db.settings.company)||'';const totalKm=sum(rows.map(r=>Number(r.distance||0)));const headHTML=`<div style="display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end"><div style="flex:1 1 260px"><div style="font-size:22px;font-weight:800">업무용승용차 운행기록부</div><div class="muted">(국세청 고시 별지 서식 참고)</div></div><div class="chip">작성월 <strong>${y}년 ${m}월</strong></div><div class="chip">총 주행거리 <strong>${numberWithCommas(totalKm)} km</strong></div></div><div class="hr"></div><div class="grid auto"><div class="field"><label>회사명</label><div><strong>${company||'-'}</strong></div></div><div class="field"><label>차량</label><div><strong>${veh?veh.name:'전체'}</strong> ${veh?'('+veh.no+')':''}</div></div><div class="field"><label>운전자</label><div><strong>${usr?usr.name:'전체'}</strong></div></div><div class="field"><label>작성일</label><div>${formatDate(new Date())}</div></div></div>`;const tableHTML=`<table class="table report-table" style="width:100%;border-collapse:collapse;margin-top:10px"><thead><tr><th>일자</th><th>시작</th><th>종료</th><th>출발지</th><th>도착지</th><th>전계기</th><th>후계기</th><th>거리</th><th>목적</th><th>운전자 서명</th></tr></thead><tbody>${rows.map(r=>{return `<tr><td>${r.date}</td><td>${r.startTime||''}</td><td>${r.endTime||''}</td><td>${r.origin||''}</td><td>${r.destination||''}</td><td>${numberWithCommas(r.odoStart||'')}</td><td>${numberWithCommas(r.odoEnd||'')}</td><td>${numberWithCommas(r.distance||0)}</td><td>${r.purpose||''}</td><td style="height:28px"></td></tr>`}).join('')}</tbody></table>`;$('#reportBox').innerHTML=headHTML+tableHTML+`<div class="muted" style="margin-top:8px">※ 근거: 국세청 『업무용승용차 운행기록 방법에 관한 고시』 별지 서식(운행기록부) 참고.</div>`}
+function downloadReportCsv(){const ym=$('#reportMonth').value;if(!ym)return;const [y,m]=ym.split('-');const vid=$('#reportVehicle').value;const uid=$('#reportUser').value;const start=`${y}-${m}-01`;const end=formatDate(new Date(Number(y),Number(m),0));let rows=db.trips.filter(r=>r.date>=start&&r.date<=end&&(!vid||r.vehicleId===vid)&&(!uid||r.userId===uid));rows.sort((a,b)=>(a.date===b.date?(a.startTime||'').localeCompare(b.startTime||''):a.date.localeCompare(b.date)));const header=['일자','시작','종료','출발지','도착지','전계기','후계기','거리(km)','목적','운전자','차량','번호판'];const lines=[header.join(',')];for(const r of rows){const u=db.users.find(x=>x.id===r.userId)||{};const v=db.vehicles.find(x=>x.id===r.vehicleId)||{};lines.push([r.date,r.startTime||'',r.endTime||'',`"${(r.origin||'').replaceAll('"','""')}"`,`"${(r.destination||'').replaceAll('"','""')}"`,r.odoStart||'',r.odoEnd||'',r.distance||'',`"${(r.purpose||'').replaceAll('"','""')}"`,u.name||'',v.name||'',v.no||''].join(','))}const blob=new Blob(["\ufeff"+lines.join('\n')],{type:'text/csv;charset=utf-8;'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`업무용승용차_운행기록부_${y}-${m}.csv`;a.click()}
+
+// Admin
+function renderAdmin(){renderAdminVehicles();renderAdminTeams();renderAdminUsers();renderAdminPurposes();fillNewUserTeam();const cNow=$('#companyNameNow');if(cNow)cNow.textContent=(db.settings&&db.settings.company)||'-';const cInp=$('#companyName');if(cInp)cInp.value=(db.settings&&db.settings.company)||''}
+function fillNewUserTeam(){const sel=$('#newUserTeam');sel.innerHTML=db.teams.map(t=>`<option value="${t.id}">${t.name}</option>`).join('')}
+function renderAdminVehicles(){const box=$('#adminVehicles');box.innerHTML='';for(const v of db.vehicles){const line=document.createElement('div');line.className='card';line.innerHTML=`<div style="display:flex;gap:8px;align-items:center"><div class="chip"><strong>${v.name}</strong><span class="muted">${v.no}</span></div><button class="btn ghost right" data-act="del">삭제</button></div>`;line.querySelector('[data-act="del"]').addEventListener('click',()=>{if(confirm('삭제하시겠습니까? (기록은 남습니다)')){db.vehicles=db.vehicles.filter(x=>x.id!==v.id);saveDB();renderAdminVehicles();renderFilters();}});box.appendChild(line)}}
+function renderAdminTeams(){const box=$('#adminTeams');box.innerHTML='';for(const t of db.teams){const line=document.createElement('div');line.className='card';line.innerHTML=`<div style="display:flex;gap:8px;align-items:center"><div class="chip"><strong>${t.name}</strong></div><button class="btn ghost right" data-act="del">삭제</button></div>`;line.querySelector('[data-act="del"]').addEventListener('click',()=>{if(confirm('팀을 삭제하시겠습니까?')){db.teams=db.teams.filter(x=>x.id!==t.id);db.users.forEach(u=>{if(u.teamId===t.id)u.teamId=null;});saveDB();renderAdminTeams();renderAdminUsers();renderFilters();fillNewUserTeam();}});box.appendChild(line)}}
+function renderAdminUsers(){const box=$('#adminUsers');box.innerHTML='';for(const u of db.users){const team=(db.teams.find(t=>t.id===u.teamId)||{}).name||'-';const line=document.createElement('div');line.className='card';line.innerHTML=`<div style="display:flex;gap:8px;align-items:center"><div class="chip"><strong>${u.name}</strong><span class="muted">${team}</span></div><button class="btn ghost" data-act="chg">팀변경</button><button class="btn ghost right" data-act="del">삭제</button></div>`;line.querySelector('[data-act="del"]').addEventListener('click',()=>{if(confirm('사용자를 삭제하시겠습니까?')){db.users=db.users.filter(x=>x.id!==u.id);saveDB();renderAdminUsers();renderFilters();}});line.querySelector('[data-act="chg"]').addEventListener('click',()=>{const tid=prompt('팀 ID를 입력하세요 (팀 탭에서 확인 가능):',u.teamId||'');if(tid!==null){u.teamId=tid||null;saveDB();renderAdminUsers();renderFilters();}});box.appendChild(line)}}
+function renderAdminPurposes(){const box=$('#adminPurposes');box.innerHTML='';for(const p of db.purposes){const line=document.createElement('div');line.className='card';line.innerHTML=`<div style="display:flex;gap:8px;align-items:center"><div class="chip"><strong>${p}</strong></div><button class="btn ghost right" data-act="del">삭제</button></div>`;line.querySelector('[data-act="del"]').addEventListener('click',()=>{if(confirm('목적을 삭제하시겠습니까?')){db.purposes=db.purposes.filter(x=>x!==p);saveDB();renderAdminPurposes();}});box.appendChild(line)}}
+$('#btnAddVehicle').addEventListener('click',()=>{const name=$('#newVehicleName').value.trim();const no=$('#newVehicleNo').value.trim();if(!name&&!no)return;db.vehicles.push({id:uuid(),name:name||no,no:no||''});saveDB();$('#newVehicleName').value='';$('#newVehicleNo').value='';renderAdminVehicles();renderFilters();renderVehicleChoices();})
+$('#btnAddTeam').addEventListener('click',()=>{const name=$('#newTeam').value.trim();if(!name)return;db.teams.push({id:uuid(),name});saveDB();$('#newTeam').value='';renderAdminTeams();renderFilters();fillNewUserTeam();renderTeamChoices();})
+$('#btnAddUser').addEventListener('click',()=>{const name=$('#newUser').value.trim();const teamId=$('#newUserTeam').value||null;if(!name)return;db.users.push({id:uuid(),name,teamId});saveDB();$('#newUser').value='';renderAdminUsers();renderFilters();renderUserChoices();})
+$('#btnAddPurpose').addEventListener('click',()=>{const p=$('#newPurpose').value.trim();if(!p)return;if(!db.purposes.includes(p))db.purposes.push(p);saveDB();$('#newPurpose').value='';renderAdminPurposes();renderPurposeChoices();})
+document.addEventListener('click',(e)=>{if(e.target&&e.target.id==='btnSaveCompany'){const val=$('#companyName').value.trim();db.settings.company=val;saveDB();const now=$('#companyNameNow');if(now)now.textContent=val||'-';showToast('회사명 저장됨')}})
+$('#btnSeed').addEventListener('click',()=>{if(!confirm('데모 데이터를 추가합니다. 계속할까요?'))return;seedDemo();renderAdmin();renderFilters();showToast('데모 데이터가 추가되었습니다')})
+$('#btnReset').addEventListener('click',()=>{if(!confirm('정말 전체 초기화하시겠습니까? 모든 데이터가 삭제됩니다.'))return;localStorage.removeItem(storeKey);db=loadDB();renderAdmin();renderFilters();renderList();showToast('초기화 완료')})
+function seedDemo(){if(db.vehicles.length===0){db.vehicles.push({id:uuid(),name:'카니발',no:'12가3456'},{id:uuid(),name:'쏘렌토',no:'34나5678'},{id:uuid(),name:'봉고',no:'89다1234'})}if(db.teams.length===0){db.teams.push({id:uuid(),name:'CS팀'},{id:uuid(),name:'안전팀'},{id:uuid(),name:'영업팀'})}if(db.users.length===0){const [cs,safe,sales]=db.teams;db.users.push({id:uuid(),name:'김점검',teamId:cs.id},{id:uuid(),name:'박안전',teamId:safe.id},{id:uuid(),name:'이영업',teamId:sales.id})}if(db.purposes.length===0){db.purposes.push('고객방문','정비','주유','교육','기타')}if(db.trips.length===0){const v=db.vehicles[0],t=db.teams[0],u=db.users[0];const today=formatDate(new Date());db.trips.push({id:uuid(),date:today,startTime:'09:00',endTime:'10:10',vehicleId:v.id,teamId:t.id,userId:u.id,origin:'춘천 본사',destination:'서울 고객사',odoStart:10000,odoEnd:10035,distance:35,purpose:'고객방문',note:'시범',createdAt:Date.now()-100000})}saveDB()}
+
+// Backup
+$('#btnExportJson').addEventListener('click',()=>{const blob=new Blob([JSON.stringify(db,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='운행관리_백업.json';a.click()})
+$('#importJson').addEventListener('change',async(ev)=>{const f=ev.target.files[0];if(!f)return;const text=await f.text();try{const parsed=JSON.parse(text);if(!parsed.trips)throw new Error('형식 오류');db=parsed;saveDB();renderFilters();renderList();renderAdmin();showToast('JSON 복원 완료')}catch(e){alert('JSON 형식이 올바르지 않습니다')}ev.target.value=''});
+
+// Init demo if empty
+if(db.vehicles.length+db.teams.length+db.users.length+db.purposes.length===0){seedDemo()}
+</script>
+</body>
+</html>
